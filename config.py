@@ -70,7 +70,7 @@ DB_PATH = "dutchie_pos.db"
 API_BASE_URL = "https://api.pos.dutchie.com"
 
 MOCK_DATA_CONFIG = {
-    "days_of_data": 28,
+    "days_of_data": 56,  # 8 weeks of data for period-over-period comparisons
     "transactions_per_day": (50, 150),
     "products_count": 50,
     "staff_count": 8

@@ -145,14 +145,22 @@ def render_filters(df_orders, df_line_items):
         max_date = max_date.date()
     
     today = datetime.now().date()
-    max_selectable_date = min(max_date, today)
+    yesterday = today - timedelta(days=1)
+    
+    # Exclude today since data might be incomplete
+    max_available_date = min(max_date, yesterday)
+    
+    # Default to last 8 complete days
+    default_start_date = max(min_date, max_available_date - timedelta(days=7))
+    default_end_date = max_available_date
     
     date_range = st.sidebar.date_input(
         "Date Range",
-        value=(min_date, max_selectable_date),
-        max_value=today,
+        value=(default_start_date, default_end_date),
+        min_value=min_date,
+        max_value=yesterday,  # Don't allow selecting today
         key="date_range_filter",
-        help=f"Data available from {min_date} to {max_date}"
+        help=f"Data available from {min_date} to {max_available_date}. Today's data excluded (incomplete)."
     )
     
     if len(date_range) == 2:

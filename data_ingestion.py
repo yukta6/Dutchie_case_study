@@ -52,17 +52,30 @@ def fetch_from_api(location_name, start_date, end_date):
         }
         
         for endpoint in possible_endpoints:
+            print(f"Trying endpoint: {endpoint}")
             response = requests.get(endpoint, headers=headers, params=params, timeout=10)
             
             if response.status_code == 200:
+                print(f"Successfully connected to {endpoint}")
                 data = response.json()
+                
                 return parse_api_response(data, location_name)
+            elif response.status_code == 401:
+                print(f"Authentication failed (401) - Check API key")
+            elif response.status_code == 404:
+                print(f"Endpoint not found (404): {endpoint}")
+            else:
+                print(f"API Error {response.status_code}: {response.text[:200]}")
         
+        print("All API endpoints failed. Falling back to mock data...")
         return generate_mock_data(location_name, start_date, end_date)
             
     except requests.exceptions.Timeout:
+        print(f"API Connection Timeout - Falling back to mock data...")
         return generate_mock_data(location_name, start_date, end_date)
     except Exception as e:
+        print(f"API Connection Error: {e}")
+        print("Falling back to mock data...")
         return generate_mock_data(location_name, start_date, end_date)
 
 
@@ -159,19 +172,37 @@ def generate_mock_data(location_name, start_date, end_date):
     location = LOCATIONS[location_name]
     days = (end_date - start_date).days + 1
     
-    categories = ['Flower', 'Edibles', 'Concentrates', 'Vapes', 'Topicals', 'Accessories']
+    # Realistic price ranges by category (Ohio cannabis market)
+    category_pricing = {
+        'Flower': {'price_range': (8, 45), 'margin': (0.50, 0.65)},  # $8-45, 50-65% margin
+        'Edibles': {'price_range': (12, 50), 'margin': (0.45, 0.60)},  # $12-50, 45-60% margin
+        'Concentrates': {'price_range': (25, 70), 'margin': (0.40, 0.55)},  # $25-70, 40-55% margin
+        'Vapes': {'price_range': (20, 60), 'margin': (0.45, 0.60)},  # $20-60, 45-60% margin
+        'Topicals': {'price_range': (15, 45), 'margin': (0.50, 0.65)},  # $15-45, 50-65% margin
+        'Accessories': {'price_range': (5, 35), 'margin': (0.60, 0.75)}  # $5-35, 60-75% margin
+    }
+    
     products = []
     product_id = 1
     
-    for category in categories:
-        for i in range(MOCK_DATA_CONFIG['products_count'] // len(categories)):
+    for category, pricing in category_pricing.items():
+        for i in range(MOCK_DATA_CONFIG['products_count'] // len(category_pricing)):
+            # Generate realistic price
+            price_min, price_max = pricing['price_range']
+            unit_price = round(random.uniform(price_min, price_max), 2)
+            
+            # Calculate cost based on margin (cost = price * (1 - margin))
+            margin_min, margin_max = pricing['margin']
+            margin_percent = random.uniform(margin_min, margin_max)
+            unit_cost = round(unit_price * (1 - margin_percent), 2)
+            
             products.append({
                 'product_id': f'prod_{product_id:04d}',
                 'name': f'{category} Product {i+1}',
                 'category': category,
                 'subcategory': f'{category} Sub',
-                'unit_cost': round(random.uniform(5, 50), 2),
-                'unit_price': round(random.uniform(10, 100), 2)
+                'unit_cost': unit_cost,
+                'unit_price': unit_price
             })
             product_id += 1
     
@@ -206,13 +237,22 @@ def generate_mock_data(location_name, start_date, end_date):
             is_refund = random.random() < 0.01
             has_discount = random.random() < 0.25
             
-            num_items = random.randint(1, 5)
+            # More realistic item counts: 60% buy 1-2 items, 30% buy 3 items, 10% buy 4-5
+            rand_val = random.random()
+            if rand_val < 0.6:
+                num_items = random.randint(1, 2)
+            elif rand_val < 0.9:
+                num_items = 3
+            else:
+                num_items = random.randint(4, 5)
+            
             order_subtotal = 0
             order_items = []
             
             for _ in range(num_items):
                 product = random.choice(products)
-                quantity = random.randint(1, 3)
+                # More realistic quantities: 70% buy 1, 25% buy 2, 5% buy 3
+                quantity = random.choices([1, 2, 3], weights=[0.70, 0.25, 0.05])[0]
                 unit_price = product['unit_price']
                 unit_cost = product['unit_cost']
                 
@@ -359,6 +399,7 @@ def load_data_for_all_locations(start_date, end_date, use_mock=True):
     
     for location_name, config in LOCATIONS.items():
         if config.get('api_key'):
+            print(f"Fetching data for {location_name}...")
             location_data = fetch_pos_data(location_name, start_date, end_date, use_mock)
             
             all_data['orders'].extend(location_data['orders'])

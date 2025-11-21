@@ -6,9 +6,41 @@ import pandas as pd
 import json
 from datetime import datetime
 import streamlit as st
+from difflib import get_close_matches
 
 
-def parse_uploaded_file(uploaded_file, location_name="Uploaded Location"):
+def find_column(df, possible_names, fuzzy=True):
+    """
+    Find column by checking multiple possible names (case-insensitive)
+    Falls back to fuzzy matching if exact match not found
+    
+    Args:
+        df: DataFrame to search
+        possible_names: List of possible column names
+        fuzzy: Whether to use fuzzy matching as fallback
+        
+    Returns:
+        Column name if found, None otherwise
+    """
+    df_columns_lower = {col.lower(): col for col in df.columns}
+    
+    # Try exact match first
+    for name in possible_names:
+        if name.lower() in df_columns_lower:
+            return df_columns_lower[name.lower()]
+    
+    # Fallback to fuzzy matching if enabled
+    if fuzzy:
+        all_columns = list(df.columns)
+        for name in possible_names:
+            # Find close matches (80% similarity)
+            matches = get_close_matches(name.lower(), [c.lower() for c in all_columns], n=1, cutoff=0.6)
+            if matches:
+                # Return the original column name (not lowercase)
+                matched_col = [c for c in all_columns if c.lower() == matches[0]][0]
+                return matched_col
+    
+    return None
     """
     Parse uploaded CSV file from Dutchie POS export
     
@@ -350,6 +382,27 @@ def parse_json_file(uploaded_file, location_name):
         'products': list(products.values()),
         'staff': list(staff.values())
     }
+
+
+def parse_uploaded_file(uploaded_file, location_name):
+    """
+    Parse uploaded file (CSV or JSON) from Dutchie POS export
+    
+    Args:
+        uploaded_file: Streamlit UploadedFile object
+        location_name: Name to assign to this location
+        
+    Returns:
+        Dictionary with orders, line_items, products, staff lists
+    """
+    file_name = uploaded_file.name.lower()
+    
+    if file_name.endswith('.json'):
+        return parse_json_file(uploaded_file, location_name)
+    elif file_name.endswith('.csv'):
+        return parse_csv_file(uploaded_file, location_name)
+    else:
+        raise ValueError(f"Unsupported file type: {file_name}. Please upload CSV or JSON files.")
 
 
 def validate_uploaded_data(data):

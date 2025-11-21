@@ -18,7 +18,7 @@ Open **http://localhost:8501** and upload your CSV transaction files.
 
 ### Generate Mock Data 
 ```bash
-# Generate 28 days (4 weeks) of test data
+# Generate 56 days (8 weeks) of test data
 python3 generate_mock_csv.py 
 ```
 
@@ -42,7 +42,8 @@ Files are saved to `mock_data` folder. Upload them through the dashboard interfa
 ### Technical
 - **Timezone handling**: One timezone per location (configured in `config.py`)
 - **Database**: Local DuckDB file (`dutchie_pos.db`) - data persists between restarts
-- **File format flexibility**: Smart column mapping handles varying CSV structures
+- **File format flexibility**: Smart column mapping handles 20+ variations per field; supports both CSV and JSON
+- **Graceful degradation**: Missing columns use sensible defaults; dashboard renders with available data
 - **Privacy**: Staff names pseudonymized automatically (no customer PII stored)
 
 ## Data Cleaning Rules
@@ -111,6 +112,13 @@ Automatically flags these issues in the Compliance Panel:
 - Linear regression to predict next week's sales
 - Anomaly detection using statistical control charts
 - Inventory reorder recommendations based on velocity trends
+
+### 4. Export & Reporting
+**Problem**: Can't save filtered views or share with stakeholders  
+**Solution**:
+- "Export to Excel" button for filtered data
+- PDF report generation with charts
+- Shareable dashboard links with saved filter states
 
 ---
 
