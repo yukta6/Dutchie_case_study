@@ -16,11 +16,10 @@ python -m streamlit run app.py
 
 Open **http://localhost:8501** and upload your CSV transaction files.
 
-### Generate Mock Data (Optional)
+### Generate Mock Data 
 ```bash
 # Generate 28 days (4 weeks) of test data
-python3 generate_mock_csv.py Cincinnati 
-python3 generate_mock_csv.py Columbus 
+python3 generate_mock_csv.py 
 ```
 
 Files are saved to `mock_data` folder. Upload them through the dashboard interface.
