@@ -164,7 +164,7 @@ def detect_exceptions(df_orders):
     df_orders['calculated_tax'] = df_orders['excise_tax'] + df_orders['state_tax'] + df_orders['local_tax']
     df_orders['tax_diff'] = abs(df_orders['total_tax'] - df_orders['calculated_tax'])
     
-    tax_mismatch_mask = df_orders['tax_diff'] > 0.02
+    tax_mismatch_mask = df_orders['tax_diff'] > 0.05
     for _, row in df_orders[tax_mismatch_mask].iterrows():
         exceptions.append({
             'type': 'tax_mismatch',

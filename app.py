@@ -602,6 +602,10 @@ def render_compliance_panel(df_orders, exceptions_df):
     """Render compliance-friendly panel"""
     df_sales = df_orders[~df_orders['voided']].copy()
     
+    # Filter exceptions to only show issues from currently visible orders
+    filtered_order_ids = df_orders['order_id'].unique()
+    filtered_exceptions = exceptions_df[exceptions_df['order_id'].isin(filtered_order_ids)]
+    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -629,16 +633,16 @@ def render_compliance_panel(df_orders, exceptions_df):
         fig = px.bar(tax_breakdown, x='Tax Type', y='Amount', title='Tax Breakdown')
         st.plotly_chart(fig, use_container_width=True)
     
-    if len(exceptions_df) > 0:
+    if len(filtered_exceptions) > 0:
         st.write("**Issues Detected:**")
         
-        for _, exc in exceptions_df.head(10).iterrows():
+        for _, exc in filtered_exceptions.head(10).iterrows():
             if exc['type'] in ['negative_total', 'tax_mismatch']:
-                st.markdown(f"<div class='exception-error'>❌ {exc['description']}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='exception-error'>{exc['description']}</div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div class='exception-warning'>⚠️ {exc['description']}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='exception-warning'>{exc['description']}</div>", unsafe_allow_html=True)
     else:
-        st.success("✅ No compliance issues detected")
+        st.success("No compliance issues detected")
 
 
 def render_heatmap(df_orders):
