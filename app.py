@@ -31,7 +31,8 @@ st.markdown("""
         margin-bottom: 1rem;
     }
     .metric-card {
-        background-color: #f0f2f6;
+                              if not valid:
+                                st.error(f"{uploaded_file.name}: {message}")    background-color: #f0f2f6;
         padding: 1rem;
         border-radius: 0.5rem;
         margin: 0.5rem 0;
@@ -791,7 +792,7 @@ def render_upload_interface():
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        st.markdown("### 📁 Upload Your Data")
+        st.markdown("### Upload Your Data")
         st.markdown("Drag and drop your CSV transaction files or click to browse")
         
         uploaded_files = st.file_uploader(
@@ -803,7 +804,7 @@ def render_upload_interface():
         )
         
         if uploaded_files:
-            st.success(f"✅ {len(uploaded_files)} file(s) selected")
+            st.success(f"{len(uploaded_files)} file(s) selected")
             
             for uploaded_file in uploaded_files:
                 st.write(f"📄 {uploaded_file.name}")
@@ -887,7 +888,7 @@ def main():
     if len(df_orders) == 0:
         st.markdown("""
         <div class='empty-state'>
-            <div class='empty-state-icon'>📂</div>
+            <div class='empty-state-icon'></div>
             <div class='empty-state-text'>No data loaded</div>
             <p>Upload a CSV file using the sidebar to get started, or check your date range filters.</p>
         </div>

@@ -52,30 +52,17 @@ def fetch_from_api(location_name, start_date, end_date):
         }
         
         for endpoint in possible_endpoints:
-            print(f"Trying endpoint: {endpoint}")
             response = requests.get(endpoint, headers=headers, params=params, timeout=10)
             
             if response.status_code == 200:
-                print(f"✅ Successfully connected to {endpoint}")
                 data = response.json()
-                
                 return parse_api_response(data, location_name)
-            elif response.status_code == 401:
-                print(f"❌ Authentication failed (401) - Check API key")
-            elif response.status_code == 404:
-                print(f"❌ Endpoint not found (404): {endpoint}")
-            else:
-                print(f"❌ API Error {response.status_code}: {response.text[:200]}")
         
-        print("⚠️ All API endpoints failed. Falling back to mock data...")
         return generate_mock_data(location_name, start_date, end_date)
             
     except requests.exceptions.Timeout:
-        print(f"⚠️ API Connection Timeout - Falling back to mock data...")
         return generate_mock_data(location_name, start_date, end_date)
     except Exception as e:
-        print(f"⚠️ API Connection Error: {e}")
-        print("Falling back to mock data...")
         return generate_mock_data(location_name, start_date, end_date)
 
 
@@ -91,7 +78,7 @@ def parse_api_response(data, location_name):
     )
     
     if not orders_data:
-        print(f"⚠️ No order data found in API response. Keys: {list(data.keys())}")
+        print(f"No order data found in API response. Keys: {list(data.keys())}")
         print(f"Sample response: {str(data)[:500]}")
         raise ValueError("No order data in API response")
     
@@ -354,7 +341,7 @@ def save_mock_data_to_csv(mock_data, location_name, start_date, end_date):
     pos_export_df = pd.DataFrame(pos_export_rows)
     pos_export_df.to_csv(filepath, index=False)
     
-    print(f"✅ Saved POS export for {location_name}: {filepath}")
+    print(f"Saved POS export for {location_name}: {filepath}")
     print(f"   - {len(mock_data['orders'])} transactions")
     print(f"   - {len(pos_export_rows)} line items")
     print(f"   - {len(mock_data['products'])} unique products")
@@ -372,7 +359,6 @@ def load_data_for_all_locations(start_date, end_date, use_mock=True):
     
     for location_name, config in LOCATIONS.items():
         if config.get('api_key'):
-            print(f"Fetching data for {location_name}...")
             location_data = fetch_pos_data(location_name, start_date, end_date, use_mock)
             
             all_data['orders'].extend(location_data['orders'])
