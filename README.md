@@ -10,6 +10,8 @@ pip install -r requirements.txt
 
 # Start dashboard
 streamlit run app.py
+# OR
+python -m streamlit run app.py
 ```
 
 Open **http://localhost:8501** and upload your CSV transaction files.
@@ -21,7 +23,7 @@ python3 generate_mock_csv.py Cincinnati
 python3 generate_mock_csv.py Columbus 
 ```
 
-Files are saved to `mock_data` folder for upload through the dashboard.
+Files are saved to `mock_data` folder. Upload them through the dashboard interface.
 
 ## Assumptions
 
