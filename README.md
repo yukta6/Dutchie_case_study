@@ -86,7 +86,7 @@ Automatically flags these issues in the Compliance Panel:
 - Staff names → `Cashier_001`, `Cashier_002`, etc.
 - No customer PII collected or stored
 
-## If Given Another Day
+## Things that can be done next
 
 ### 1. Automated Alerting
 **Problem**: Managers must manually check dashboard daily  
